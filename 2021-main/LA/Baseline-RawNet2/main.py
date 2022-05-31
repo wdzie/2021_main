@@ -40,20 +40,23 @@ def produce_evaluation_file(dataset, model, device, save_path):
     data_loader = DataLoader(dataset, batch_size=128, shuffle=False, drop_last=False)
     model.eval()
     
-    for batch_x,utt_id in data_loader:
+    for batch_x, utt_id in data_loader:
         fname_list = []
         score_list = []  
         batch_size = batch_x.size(0)
         batch_x = batch_x.to(device)
         batch_out = model(batch_x)
+        #问题：batch_out的数据类型；经过.ravel(),batch_score的数据类型是什么？
+
         batch_score = (batch_out[:, 1]
                        ).data.cpu().numpy().ravel()
         # add outputs
+        #extend的功能将a.extend(b),输出：a+b
         fname_list.extend(utt_id)
         score_list.extend(batch_score.tolist())
         
         with open(save_path, 'a+') as fh:
-            for f, cm in zip(fname_list,score_list):
+            for f, cm in zip(fname_list, score_list):
                 fh.write('{} {}\n'.format(f, cm))
         fh.close()   
     print('Scores saved to {}'.format(save_path))
@@ -215,7 +218,8 @@ if __name__ == '__main__':
     #对比Dataset_ASVspoof2019_train(),同样多了标签参数
     d_label_trn,file_train = genSpoof_list( dir_meta =  os.path.join(args.protocols_path+'{}_cm_protocols/{}.cm.train.trn.txt'.format(prefix,prefix_2019)),is_train=True,is_eval=False)
     print('no. of training trials',len(file_train))
-    
+    #加上语句
+
     train_set=Dataset_ASVspoof2019_train(list_IDs = file_train,labels = d_label_trn,base_dir = os.path.join(args.database_path+'ASVspoof2019_{}_train/'.format(args.track)))
     train_loader = DataLoader(train_set, batch_size=args.batch_size, shuffle=True,drop_last = True)
     
